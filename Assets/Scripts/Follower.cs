@@ -30,7 +30,7 @@ public class Follower : Movement {
             lastPos = curPos;
             Node endnode = pathfinder.GetClosestNode(target.position);
             Node startnode = pathfinder.GetClosestNode(transform);
-            SetPath(pathfinder.PathFind(startnode, endnode));
+           // SetPath(pathfinder.PathFind(startnode, endnode));
 
         }
         else

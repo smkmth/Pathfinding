@@ -2,35 +2,55 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+//builds a grid of nodes to a choosen size and resolution.
 public class Grid : MonoBehaviour {
 
+    //node prefab object.
     public GameObject nodeprefab;
-    public List<Node> nodes;
+
+    //how big should the grid actually be
     public float gridsizeX;
     public float gridsizeY;
-    private float nodeSize;
+
+    //the size of the nodes used
+    private float nodeDiameter;
     public float nodeRad;
-    private Pathfinder pathfinder;
+
+    //how far each node should check
     public float NodeDistanceToCheck;
     public float NodeRadiusToCheck;
 
+    private Pathfinder pathfinder;
 
 
 	// Use this for initialization
-	void Start () {
+	void Awake () {
+
+        List<Node> nodes = new List<Node>();
+
         pathfinder = GetComponent<Pathfinder>();
-        nodeSize = nodeRad * 2;
-        gridsizeX = Mathf.RoundToInt(gridsizeX / nodeSize);
-        gridsizeY= Mathf.RoundToInt(gridsizeY / nodeSize);
+
+        //get diameter from radius
+        nodeDiameter = nodeRad * 2;
+
+        //get the size of the grid accomidating for node size 
+        gridsizeX = Mathf.RoundToInt(gridsizeX / nodeDiameter);
+        gridsizeY= Mathf.RoundToInt(gridsizeY / nodeDiameter);
+        
+        //convert centerpos into a vector2
         Vector2 centerpos = new Vector2(transform.position.x, transform.position.y);
+
+        //get the location of the bottomleft of the grid baised on this gameobject transform
         Vector2 worldBottomLeft = centerpos - Vector2.right * gridsizeX / 2 - Vector2.up * gridsizeY / 2;
+
+        //double sized array to build the actual grid
         for(int x=0; x <= gridsizeX; x++)
         {
             for (int y = 0; y <= gridsizeY; y++)
             {
 
                 GameObject nodeobj = Instantiate(nodeprefab, transform);
-                Vector2 gridPoint = worldBottomLeft + Vector2.right * (x * nodeSize + nodeRad) + Vector2.up * (y *nodeSize + nodeRad);
+                Vector2 gridPoint = worldBottomLeft + Vector2.right * (x * nodeDiameter + nodeRad) + Vector2.up * (y *nodeDiameter + nodeRad);
                 nodeobj.transform.position = gridPoint;
                 nodeobj.SetActive(true);
                 Node node = nodeobj.GetComponent<Node>();
@@ -51,8 +71,5 @@ public class Grid : MonoBehaviour {
 		
 	}
 	
-	// Update is called once per frame
-	void Update () {
-		
-	}
+
 }

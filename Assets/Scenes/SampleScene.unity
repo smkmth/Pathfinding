@@ -302,8 +302,6 @@ MonoBehaviour:
   previous: {fileID: 0}
   g: 0
   h: 0
-  hitObject: 0
-  AmIViable: 0
 --- !u!50 &133335176
 Rigidbody2D:
   serializedVersion: 4
@@ -519,7 +517,7 @@ MonoBehaviour:
   - {fileID: 758267582}
   - {fileID: 324765185}
   Agents:
-  - {fileID: 2074231320}
+  - {fileID: 0}
   - {fileID: 1485742477}
   Destination: {fileID: 0}
   agent1Dest: []
@@ -728,8 +726,6 @@ MonoBehaviour:
   previous: {fileID: 0}
   g: 0
   h: 0
-  hitObject: 0
-  AmIViable: 0
 --- !u!1 &328661789
 GameObject:
   m_ObjectHideFlags: 0
@@ -908,8 +904,6 @@ MonoBehaviour:
   previous: {fileID: 0}
   g: 0
   h: 0
-  hitObject: 0
-  AmIViable: 0
 --- !u!1001 &645686214
 Prefab:
   m_ObjectHideFlags: 0
@@ -1079,8 +1073,6 @@ MonoBehaviour:
   previous: {fileID: 0}
   g: 0
   h: 0
-  hitObject: 0
-  AmIViable: 0
 --- !u!1 &773883623
 GameObject:
   m_ObjectHideFlags: 0
@@ -1295,8 +1287,6 @@ MonoBehaviour:
   previous: {fileID: 0}
   g: 0
   h: 0
-  hitObject: 0
-  AmIViable: 0
 --- !u!4 &797939465
 Transform:
   m_ObjectHideFlags: 0
@@ -2032,8 +2022,6 @@ MonoBehaviour:
   previous: {fileID: 0}
   g: 0
   h: 0
-  hitObject: 0
-  AmIViable: 0
 --- !u!1001 &1201616458
 Prefab:
   m_ObjectHideFlags: 0
@@ -2193,8 +2181,6 @@ MonoBehaviour:
   previous: {fileID: 0}
   g: 0
   h: 0
-  hitObject: 0
-  AmIViable: 0
 --- !u!1 &1373655514
 GameObject:
   m_ObjectHideFlags: 0
@@ -2350,8 +2336,6 @@ MonoBehaviour:
   previous: {fileID: 0}
   g: 0
   h: 0
-  hitObject: 0
-  AmIViable: 0
 --- !u!4 &1407418290
 Transform:
   m_ObjectHideFlags: 0
@@ -2532,7 +2516,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!58 &1485742475
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -2668,8 +2652,6 @@ MonoBehaviour:
   previous: {fileID: 0}
   g: 0
   h: 0
-  hitObject: 0
-  AmIViable: 0
 --- !u!1 &1559637040
 GameObject:
   m_ObjectHideFlags: 0
@@ -3147,8 +3129,6 @@ MonoBehaviour:
   previous: {fileID: 0}
   g: 0
   h: 0
-  hitObject: 0
-  AmIViable: 0
 --- !u!4 &1824093394
 Transform:
   m_ObjectHideFlags: 0
@@ -3596,9 +3576,9 @@ GameObject:
   m_Component:
   - component: {fileID: 2074231322}
   - component: {fileID: 2074231321}
-  - component: {fileID: 2074231320}
   - component: {fileID: 2074231319}
   - component: {fileID: 2074231318}
+  - component: {fileID: 2074231320}
   m_Layer: 9
   m_Name: Spr_Agent
   m_TagString: Untagged
@@ -3658,7 +3638,7 @@ MonoBehaviour:
   targetListIndex: 0
   movespeed: 10
   distance: 0
-  fudgeDistance: 1
+  fudgeDistance: 0.5
 --- !u!212 &2074231321
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -3943,8 +3923,6 @@ MonoBehaviour:
   previous: {fileID: 0}
   g: 0
   h: 0
-  hitObject: 0
-  AmIViable: 0
 --- !u!4 &2119590114
 Transform:
   m_ObjectHideFlags: 0

@@ -2,31 +2,46 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+//raycast node implementation. this class will scan 8 directions
+//around it and store a list of nodes. 
+
+//********************************************************************
+
+//IMPORTANT NOTE. THIS WILL ONLY WORK ATM IF IN THE PHYSICS2D SETTINGS
+//QUERIES START IN COLLIDERS IS UNCHECKED.
+
+//********************************************************************
+
+//SIMILARLY, NODES NEED TO BE ON A LAYER CALLED "Node" AND OBJECTS TO 
+//AVOID NEED TO BE ON A LAYER CALLED "Object"
+
+//********************************************************************
 public class Node : MonoBehaviour {
 
 
-
-    public float DistanceToCheck =1;
-    public float RadiusToCheck =1;
-
-    
+    [HideInInspector]
+    public float DistanceToCheck;
+    [HideInInspector]
+    public float RadiusToCheck;
 
     public List<Node> connections;
     public Transform location;
 
-    public Vector2 downleft;
-    public Vector2 downright;
-    public Vector2 forwardleft;
-    public Vector2 forwardright;
+    private Vector2 downleft;
+    private Vector2 downright;
+    private Vector2 forwardleft;
+    private Vector2 forwardright;
 
+
+    //pathfinding stuff
     public Node previous;
-    public float g;
-    public float h;
-    public float f
+    public float Gcost;
+    public float Hcost;
+    public float Fcost
     {
         get
         {
-            return g + h;
+            return Gcost + Hcost;
         }
     }
 
@@ -67,12 +82,12 @@ public class Node : MonoBehaviour {
 
     void CheckDirection( Vector2 directionToCheck, float distanceToCheck, float radiustocheck)
     {
-        // Debug.DrawRay(transform.position, directionToCheck * distanceToCheck, Color.white, 30.0f);
-        //RaycastHit2D hit = Physics2D.Raycast(transform.position , directionToCheck );
         RaycastHit2D hit = Physics2D.CircleCast(transform.position, radiustocheck , directionToCheck , distanceToCheck);
-        // Does the ray intersect any objects excluding the player layer
+
+        // Does the ray intersect any objects?
         if (hit.collider != null)
         {
+            //for debug purposes so we can see any collisions
             if (hit.collider.gameObject.layer == LayerMask.NameToLayer("Object"))
             {
                 Debug.DrawLine(transform.position, directionToCheck * hit.distance, Color.yellow,30.0f);
@@ -83,12 +98,10 @@ public class Node : MonoBehaviour {
 
             if (hit.collider.gameObject.layer == LayerMask.NameToLayer("Node"))
             {
-
                 Node node = hit.collider.gameObject.GetComponent<Node>();
 
                 connections.Add(hit.collider.gameObject.GetComponent<Node>());
-                
-     
+
                 Debug.DrawLine(transform.position, directionToCheck * hit.distance, Color.blue,5.0f);
                 //Debug.Log(gameObject.name + "can travel to " + hit.collider.gameObject.name);
               
@@ -105,8 +118,8 @@ public class Node : MonoBehaviour {
     public void ClearNode()
     {
         previous = this;
-        h = 0;
-        g = 0;
+        Hcost = 0;
+        Gcost = 0;
 
     }
 }

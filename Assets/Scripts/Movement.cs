@@ -11,47 +11,34 @@ public enum Movestate
 
 public class Movement : MonoBehaviour {
 
+    //what state this ai currently is
     public Movestate currentMovestate;
-    private Pathfinder pathfinder;
-    public List<Transform> targetList;
-    public List<Node> targetNodeList;
-    public int targetListIndex;
+
+    //our movespeed, and how close we need to be
+    //to a target to consider the path finished.
     public float movespeed;
-    public float distance;
     public float fudgeDistance;
 
-	// Use this for initialization
-	void Start () {
-        targetListIndex = 0;
-
+    //private vars that store the list of targets, the index
+    //for the target we are currently going for and the 
+    //distance from current target.
+    private List<Node> targetNodeList;
+    private int targetListIndex;
+    private float distance;
+    
+    //a ref to our pathfinder 
+    private Pathfinder pathfinder;
+	
+    // Use this for initialization
+	void Start ()
+    {
         pathfinder = GameObject.Find("Pathfinder").GetComponent<Pathfinder>();
-      
-		
+        
+        targetListIndex = 0;
 	}
 
-    public void SetPath(List<Transform> targetlist)
-    {
-        currentMovestate = Movestate.TargetGiven;
-        if (targetlist.Count <= 0)
-        {
-            currentMovestate = Movestate.Error;
-            Debug.Assert(false, "No targets passed to " + gameObject.name);
-
-        }
-        else
-        {
-            int targetindex = 0;
-            foreach (Transform target in targetlist)
-            {
-                if (target == null) {
-                    Debug.Assert(false, "Target " + targetindex + " is null for " + gameObject.name);
-                    currentMovestate = Movestate.Error;
-                }
-                targetindex++;
-            }
-            targetList = targetlist;     
-        }
-    }
+    //set path validates the path, to make sure it makes sence then sets it to 
+    //targetNodeList and sets the movestate so we start moving.
     public void SetPath(List<Node> targetlist)
     {
         currentMovestate = Movestate.TargetGiven;
@@ -72,6 +59,7 @@ public class Movement : MonoBehaviour {
                 }
                 targetindex++;
             }
+
             targetNodeList = targetlist;     
         }
     }
@@ -79,23 +67,18 @@ public class Movement : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
-
+        //when we click, we get the clicked on worldpoint, convert it to 2dm then set a path
+        //that we make from pathfinder, from the current pos, to the mouse click pos.
         if (Input.GetMouseButtonDown(0))
         {
-            Debug.Log("MouseDown");
             Vector3 worldPoint = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             Vector2 worldPoint2d = new Vector2(worldPoint.x, worldPoint.y);
-            // Transform mousepos = transform;
-            //mousepos.position = worldPoint;
-            Node endnode = pathfinder.GetClosestNode(worldPoint2d);
-            Node startnode = pathfinder.GetClosestNode(transform);
-            Debug.Log("Start node was " + startnode.name);
-            Debug.Log("end node was " + endnode.name);
-            SetPath(pathfinder.PathFind(startnode, endnode));
+            SetPath(pathfinder.PathFind(transform.position, worldPoint2d));
 
         }
 
-
+        //if we have a path, we move our transfrom towards the taget at a speed. else, we either increment 
+        //the targetListIndex to the next target node, or we are finished, and awaiting orders. 
         if (currentMovestate != Movestate.Error)
         {
 
