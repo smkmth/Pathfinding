@@ -122,15 +122,17 @@ MonoBehaviour:
   RadiusToCheck: 0.5
   connections: []
   location: {fileID: 0}
-  downleft: {x: 0, y: 0}
-  downright: {x: 0, y: 0}
-  forwardleft: {x: 0, y: 0}
-  forwardright: {x: 0, y: 0}
+  NodesToCheck:
+    serializedVersion: 2
+    m_Bits: 256
+  WallsToCheck:
+    serializedVersion: 2
+    m_Bits: 1024
+  WallAvoidDistance: 0
   previous: {fileID: 0}
-  g: 0
-  h: 0
-  hitObject: 0
-  AmIViable: 0
+  Gcost: 0
+  Hcost: 0
+  walkable: 0
 --- !u!212 &212977910100724490
 SpriteRenderer:
   m_ObjectHideFlags: 1

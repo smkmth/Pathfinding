@@ -45,7 +45,7 @@ public class Movement : MonoBehaviour {
         if (targetlist.Count <= 0)
         {
             currentMovestate = Movestate.Error;
-            Debug.Assert(false, "No targets passed to " + gameObject.name);
+           // Debug.Assert(false, "No targets passed to " + gameObject.name);
 
         }
         else

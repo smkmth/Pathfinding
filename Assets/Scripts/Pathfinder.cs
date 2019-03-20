@@ -6,16 +6,19 @@ using UnityEngine;
 //to work, this class needs some kind of node class, which has a 
 //value for gcost, hcost and fcost, as well as an empty reference 
 //to another node, and a list of connections to adjacent nodes.
+
 public class Pathfinder : MonoBehaviour {
 
     //A list of nodes for the pathfinder to navigate
     public List<Node> Nodes;
     
+    public Node currentclosest;
+
+    private Node currentNode; 
     //get the closest node to a vector2 pos. 
     public Node GetClosestNode(Vector2 pos)
     {
         float bestdistance = 9999999.0f;
-        Node currentclosest = new Node();
         foreach( Node node in Nodes)
         {
             float currentdistance = Vector2.Distance(pos, node.transform.position);
@@ -31,7 +34,6 @@ public class Pathfinder : MonoBehaviour {
     public Node GetClosestNode(Transform pos)
     {
         float bestdistance = 9999999.0f;
-        Node currentclosest = new Node();
         foreach (Node node in Nodes)
         {
             float currentdistance = Vector2.Distance(pos.position, node.transform.position);
@@ -64,7 +66,7 @@ public class Pathfinder : MonoBehaviour {
         List<Node> openList = new List<Node>();     //open list for all the nodes the algorithim is considering
         List<Node> closedList = new List<Node>();   //closed list for the nodes that have already been delt with
         List<Node> path = new List<Node>();          //a list of nodes to form a path
-        Node currentNode = new Node();               //the current node being investigated
+        Node currentNode = startnode;           //the current node being investigated
 
         //start by adding the start point to our open lsit
         openList.Add(startnode);
@@ -73,6 +75,8 @@ public class Pathfinder : MonoBehaviour {
         while (openList.Count > 0)
         {
             currentNode = openList[0];
+         
+
 
             //find the most promicing node to consider
             foreach (Node opennode in openList)
@@ -98,7 +102,7 @@ public class Pathfinder : MonoBehaviour {
             foreach (Node neighbor in currentNode.connections)
             {
                 //if the neighbor is in the closed list we have already delt with it.
-                if (closedList.Contains(neighbor))
+                if (closedList.Contains(neighbor) || neighbor.walkable == false)
                 {
                     continue;
                 }

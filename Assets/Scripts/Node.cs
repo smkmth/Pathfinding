@@ -32,6 +32,12 @@ public class Node : MonoBehaviour {
     private Vector2 forwardleft;
     private Vector2 forwardright;
 
+    public LayerMask NodesToCheck;
+    public LayerMask WallsToCheck;
+
+    public float WallAvoidDistance;
+    
+
 
     //pathfinding stuff
     public Node previous;
@@ -44,12 +50,13 @@ public class Node : MonoBehaviour {
             return Gcost + Hcost;
         }
     }
+    public bool walkable;
 
 
     // Use this for initialization
-    void Start()
+    void Awake()
     {
-
+        walkable = true;
         location = transform;
         previous = this;
         
@@ -59,6 +66,7 @@ public class Node : MonoBehaviour {
 
     public void CalculateNeighbors()
     {
+        /*
 
         forwardright = (Vector2.up + Vector2.right).normalized;
         forwardleft = (Vector2.up + Vector2.left).normalized;
@@ -75,14 +83,27 @@ public class Node : MonoBehaviour {
         CheckDirection(forwardright, DistanceToCheck, RadiusToCheck);
         CheckDirection(downleft, DistanceToCheck, RadiusToCheck);
         CheckDirection(downright, DistanceToCheck, RadiusToCheck);
+        */
+        Collider2D[] results = Physics2D.OverlapCircleAll(transform.position, RadiusToCheck, NodesToCheck );
+        foreach(Collider2D result in results)
+        {
+            if(result.gameObject.layer == LayerMask.NameToLayer("Node"))
+            {
+                connections.Add(result.gameObject.GetComponent<Node>());
+            }
+        }
+         
+
+     
 
     } 
 
 
-
+    //raycast node code is not currently used, node walkable is set by the objects themselves
     void CheckDirection( Vector2 directionToCheck, float distanceToCheck, float radiustocheck)
     {
         RaycastHit2D hit = Physics2D.CircleCast(transform.position, radiustocheck , directionToCheck , distanceToCheck);
+        
 
         // Does the ray intersect any objects?
         if (hit.collider != null)

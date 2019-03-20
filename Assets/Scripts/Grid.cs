@@ -17,7 +17,7 @@ public class Grid : MonoBehaviour {
     public float nodeRad;
 
     //how far each node should check
-    public float NodeDistanceToCheck;
+    public float WallAvoidDistance;
     public float NodeRadiusToCheck;
 
     private Pathfinder pathfinder;
@@ -55,7 +55,7 @@ public class Grid : MonoBehaviour {
                 nodeobj.SetActive(true);
                 Node node = nodeobj.GetComponent<Node>();
                 node.name = x.ToString() + " " + y.ToString();
-                node.DistanceToCheck = NodeDistanceToCheck;
+                node.WallAvoidDistance = WallAvoidDistance;
                 node.RadiusToCheck = NodeRadiusToCheck;
                 nodes.Add(node);
             }
