@@ -9,7 +9,7 @@ public enum Movestate
     Finished
 }
 
-public class Movement : MonoBehaviour {
+public class PathMover : MonoBehaviour {
 
     //what state this ai currently is
     public Movestate currentMovestate;
@@ -37,16 +37,39 @@ public class Movement : MonoBehaviour {
         targetListIndex = 0;
 	}
 
+
+    //Takes a vec2, checks if it a valid point, then calls set path of that destination
+    public void SetDestination(Vector2 destination)
+    {
+        targetListIndex = 0;
+        currentMovestate = Movestate.TargetGiven;
+
+        if (pathfinder.GetDistance(destination, transform.position) < fudgeDistance )
+        {
+            currentMovestate = Movestate.Finished;
+            return;
+        }
+
+        Node destinationNode = pathfinder.CheapGetClosestNode(destination);
+            
+        if (destinationNode.walkable == false)
+        {
+            currentMovestate = Movestate.Error;
+            return;
+        }
+
+        SetPath(pathfinder.PathFind(transform.position, destination));
+
+    }
+
     //set path validates the path, to make sure it makes sence then sets it to 
     //targetNodeList and sets the movestate so we start moving.
     public void SetPath(List<Node> targetlist)
     {
-        currentMovestate = Movestate.TargetGiven;
+
         if (targetlist.Count <= 0)
         {
             currentMovestate = Movestate.Error;
-           // Debug.Assert(false, "No targets passed to " + gameObject.name);
-
         }
         else
         {
@@ -67,22 +90,14 @@ public class Movement : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
-        //when we click, we get the clicked on worldpoint, convert it to 2dm then set a path
-        //that we make from pathfinder, from the current pos, to the mouse click pos.
-        if (Input.GetMouseButtonDown(0))
-        {
-            Vector3 worldPoint = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            Vector2 worldPoint2d = new Vector2(worldPoint.x, worldPoint.y);
-            SetPath(pathfinder.PathFind(transform.position, worldPoint2d));
-
-        }
+  
 
         //if we have a path, we move our transfrom towards the taget at a speed. else, we either increment 
         //the targetListIndex to the next target node, or we are finished, and awaiting orders. 
-        if (currentMovestate != Movestate.Error)
+        if (currentMovestate != Movestate.Error && currentMovestate != Movestate.Finished)
         {
-
-            distance = Vector3.Distance(transform.position, targetNodeList[targetListIndex].location.position);
+            
+            distance = Vector2.Distance(transform.position, targetNodeList[targetListIndex].location.position);
             if (distance > fudgeDistance)
             {
                 float step = movespeed * Time.deltaTime;
@@ -93,10 +108,10 @@ public class Movement : MonoBehaviour {
             }
             else
             {
-                currentMovestate = Movestate.Finished;
                 if (targetListIndex >= (targetNodeList.Count - 1))
                 {
-                    currentMovestate = Movestate.Error;
+
+                    currentMovestate = Movestate.Finished;
                     targetListIndex = 0;
                 }
                 else

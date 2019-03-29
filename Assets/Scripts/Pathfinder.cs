@@ -1,4 +1,6 @@
-﻿using System.Collections;
+﻿//uncomment out to see path, start point and destination
+//#define DEBUGDRAW
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -11,32 +13,66 @@ public class Pathfinder : MonoBehaviour {
 
     //A list of nodes for the pathfinder to navigate
     public List<Node> Nodes;
-    
-    public Node currentclosest;
+    //what layer the nodes are on, used in the get closest node code.
+    public LayerMask nodeLayer;
 
-    private Node currentNode; 
-    //get the closest node to a vector2 pos. 
+
+    //get the closest node to a vector2 pos. Obsolete, use CheapGetClosestNode
     public Node GetClosestNode(Vector2 pos)
     {
+        Node currentclosest = Nodes[0];
+
         float bestdistance = 9999999.0f;
         foreach( Node node in Nodes)
         {
-            float currentdistance = Vector2.Distance(pos, node.transform.position);
+            float currentdistance = Vector2.Distance(pos, node.location.position);
             if (currentdistance < bestdistance)
             {
                 bestdistance = currentdistance;
                 currentclosest = node;
             }
         }
+        Debug.LogWarning("Caution; using the expensive get closest node. consider using CheapGetClosestNode");
         return currentclosest;
     }
+    //cheap get closest node returns in 0.045ms, verces get closest which takes about 18ms, uses 
+    //manhatten distance instead of squrt which is major league cheaper
+    public Node CheapGetClosestNode(Vector2 pos)
+    {
+        Node currentclosest = Nodes[0];
+        float bestdistance = 9999999.0f;
+        Collider2D[] results = Physics2D.OverlapCircleAll(pos, 3.0f, nodeLayer);
+        foreach (Collider2D result in results)
+        {
+            if (result.gameObject.layer == LayerMask.NameToLayer("Node"))
+            {
+                Node currentClosest = result.GetComponent<Node>();
+                float testdistance = GetDistance(currentClosest, pos);
+                if (bestdistance > testdistance)
+                {
+                    bestdistance = testdistance;
+                    currentclosest = currentClosest;
+                }
+
+            }
+        }
+#if DEBUGDRAW
+        currentclosest.transform.GetChild(0).gameObject.SetActive(true);
+        currentclosest.GetComponentInChildren<SpriteRenderer>().color = Color.red;
+#endif
+
+        return currentclosest;
+    }
+
     //get the cloest node to a given transform
     public Node GetClosestNode(Transform pos)
     {
+        Node currentclosest = new Node();
+
         float bestdistance = 9999999.0f;
         foreach (Node node in Nodes)
         {
-            float currentdistance = Vector2.Distance(pos.position, node.transform.position);
+            float currentdistance = Vector2.Distance(pos.position, node.location.position);
             if (currentdistance < bestdistance)
             {
                 bestdistance = currentdistance;
@@ -47,7 +83,7 @@ public class Pathfinder : MonoBehaviour {
     }
     
     //get the distance used between two nodes. used in g cost.
-    float GetDistance(Node node1, Node node2)
+    public float GetDistance(Node node1, Node node2)
     {
         float DistX = Mathf.Abs(node1.location.position.x - node2.location.position.x);
         float DistY = Mathf.Abs(node1.location.position.y - node2.location.position.y);
@@ -55,16 +91,43 @@ public class Pathfinder : MonoBehaviour {
         if (DistX > DistY)
             return 14 * DistY + 10 * (DistX - DistY);
         return 14 * DistX + 10 * (DistY - DistX);
+    }
+
+    //get the distance used between a node and a pos.
+    public float GetDistance(Node node1, Vector2 pos)
+    {
+        float DistX = Mathf.Abs(node1.location.position.x - pos.x);
+        float DistY = Mathf.Abs(node1.location.position.y - pos.y);
+
+        if (DistX > DistY)
+            return 14 * DistY + 10 * (DistX - DistY);
+        return 14 * DistX + 10 * (DistY - DistX);
 
     }
-    
+
+    //get the distance used between a pos and a pos.
+    public float GetDistance(Vector2 pos1, Vector2 pos2)
+    {
+        float DistX = Mathf.Abs(pos1.x - pos2.x);
+        float DistY = Mathf.Abs(pos1.y - pos2.y);
+
+        if (DistX > DistY)
+            return 14 * DistY + 10 * (DistX - DistY);
+        return 14 * DistX + 10 * (DistY - DistX);
+
+    }
+
+
     public List<Node> PathFind(Vector2 start, Vector2 end)
     {
+        foreach (Node node in Nodes)
+        {
+            node.ClearNode();
+        }
         //init variables i will need
-        Node startnode = GetClosestNode(start);
-        Node endnode = GetClosestNode(end);
+        Node startnode = CheapGetClosestNode(start);
+        Node endnode = CheapGetClosestNode(end);
         List<Node> openList = new List<Node>();     //open list for all the nodes the algorithim is considering
-        List<Node> closedList = new List<Node>();   //closed list for the nodes that have already been delt with
         List<Node> path = new List<Node>();          //a list of nodes to form a path
         Node currentNode = startnode;           //the current node being investigated
 
@@ -86,10 +149,11 @@ public class Pathfinder : MonoBehaviour {
                     currentNode = opennode;
                 }
             }
-
+            
             //we are now checking this node so take it from the open list and dump it in the closed list
             openList.Remove(currentNode);
-            closedList.Add(currentNode);
+
+            currentNode.inClosedList = true;
 
             //if its the final node, we are done!
             if (currentNode == endnode)
@@ -101,8 +165,11 @@ public class Pathfinder : MonoBehaviour {
             //if not, look at each of its neighbor nodes. 
             foreach (Node neighbor in currentNode.connections)
             {
+#if DEBUGDRAW
+                Debug.DrawLine(currentNode.transform.position, neighbor.transform.position,Color.red, 3.0f);
+#endif
                 //if the neighbor is in the closed list we have already delt with it.
-                if (closedList.Contains(neighbor) || neighbor.walkable == false)
+                if (neighbor.inClosedList == true || neighbor.walkable == false)
                 {
                     continue;
                 }
@@ -136,15 +203,9 @@ public class Pathfinder : MonoBehaviour {
         if (openList.Count == 0)
         {
             
-            Debug.Log("Cant solve");
-            closedList.Clear();
+            Debug.LogWarning("Path not solved. Are you checking if the destination is walkable?");
+         
             openList.Clear();
-
-            foreach (Node node in Nodes)
-            {
-                node.ClearNode();
-            }
-
         }
         return path;
 
@@ -155,23 +216,22 @@ public class Pathfinder : MonoBehaviour {
     //inside each node. the end result is then reversed and returned.
     public List<Node> CalculatePath(Node start, Node end)
     {
+        
         List<Node> path = new List<Node>();
       
         Node pathCurrentNode= end;
         while(pathCurrentNode != start)
         {
 
+#if DEBUGDRAW
+            Debug.DrawLine(pathCurrentNode.transform.position, pathCurrentNode.previous.transform.position, Color.yellow, 4.0f);
+#endif
             path.Add(pathCurrentNode);
             pathCurrentNode = pathCurrentNode.previous;
 
         }
         
         path.Reverse();
-            
-        foreach(Node node in path)
-        {
-            node.ClearNode();
-        }
         return path;
     }
 

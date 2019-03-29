@@ -2,18 +2,24 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+
+//primary implementation is physics overlap checking. will work in 
+// most situations. objects are marked as walkable by obstructions,
+//so anything which obstructs a node must have an obstruction script
+//
+//This does however work dynamically, meaning nodes can be obscured 
+//at run time with the obstruction object and still work.
+
 //raycast node implementation. this class will scan 8 directions
 //around it and store a list of nodes. 
-
-//********************************************************************
 
 //IMPORTANT NOTE. THIS WILL ONLY WORK ATM IF IN THE PHYSICS2D SETTINGS
 //QUERIES START IN COLLIDERS IS UNCHECKED.
 
 //********************************************************************
 
-//SIMILARLY, NODES NEED TO BE ON A LAYER CALLED "Node" AND OBJECTS TO 
-//AVOID NEED TO BE ON A LAYER CALLED "Object"
+//FOR BOTH IMPLEMENTATIONS, NODES NEED TO BE ON A LAYER CALLED "Node" 
+//AND OBJECTS TO AVOID NEED TO BE ON A LAYER CALLED "Object"
 
 //********************************************************************
 public class Node : MonoBehaviour {
@@ -35,9 +41,6 @@ public class Node : MonoBehaviour {
     public LayerMask NodesToCheck;
     public LayerMask WallsToCheck;
 
-    public float WallAvoidDistance;
-    
-
 
     //pathfinding stuff
     public Node previous;
@@ -51,12 +54,14 @@ public class Node : MonoBehaviour {
         }
     }
     public bool walkable;
+    public bool inClosedList;
 
 
     // Use this for initialization
     void Awake()
     {
         walkable = true;
+        inClosedList = false;
         location = transform;
         previous = this;
         
@@ -138,6 +143,7 @@ public class Node : MonoBehaviour {
 
     public void ClearNode()
     {
+        inClosedList = false;
         previous = this;
         Hcost = 0;
         Gcost = 0;
