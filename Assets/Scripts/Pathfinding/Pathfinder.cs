@@ -1,8 +1,10 @@
 ﻿//uncomment out to see path, start point and destination
 //#define DEBUGDRAW
+//#define USELIST
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Diagnostics;
 
 //The class that actually does the pathfinding implementation.
 //to work, this class needs some kind of node class, which has a 
@@ -15,6 +17,8 @@ public class Pathfinder : MonoBehaviour {
     public List<Node> Nodes;
     //what layer the nodes are on, used in the get closest node code.
     public LayerMask nodeLayer;
+
+
 
 
     //get the closest node to a vector2 pos. Obsolete, use CheapGetClosestNode
@@ -32,7 +36,7 @@ public class Pathfinder : MonoBehaviour {
                 currentclosest = node;
             }
         }
-        Debug.LogWarning("Caution; using the expensive get closest node. consider using CheapGetClosestNode");
+       // Debug.LogWarning("Caution; using the expensive get closest node. consider using CheapGetClosestNode");
         return currentclosest;
     }
     //cheap get closest node returns in 0.045ms, verces get closest which takes about 18ms, uses 
@@ -120,6 +124,8 @@ public class Pathfinder : MonoBehaviour {
 
     public List<Node> PathFind(Vector2 start, Vector2 end)
     {
+        Stopwatch sw = new Stopwatch();
+        sw.Start();
         foreach (Node node in Nodes)
         {
             node.ClearNode();
@@ -127,7 +133,11 @@ public class Pathfinder : MonoBehaviour {
         //init variables i will need
         Node startnode = CheapGetClosestNode(start);
         Node endnode = CheapGetClosestNode(end);
+#if USELIST
         List<Node> openList = new List<Node>();     //open list for all the nodes the algorithim is considering
+#else
+        Heap<Node> openList = new Heap<Node>(Nodes.Count);     //open list for all the nodes the algorithim is considering
+#endif
         List<Node> path = new List<Node>();          //a list of nodes to form a path
         Node currentNode = startnode;           //the current node being investigated
 
@@ -137,10 +147,15 @@ public class Pathfinder : MonoBehaviour {
         //While we still have options to consider
         while (openList.Count > 0)
         {
+
+#if USELIST
             currentNode = openList[0];
-         
+#else
+            currentNode = openList.RemoveFirst();
+#endif
 
 
+#if USELIST
             //find the most promicing node to consider
             foreach (Node opennode in openList)
             {
@@ -149,15 +164,21 @@ public class Pathfinder : MonoBehaviour {
                     currentNode = opennode;
                 }
             }
-            
-            //we are now checking this node so take it from the open list and dump it in the closed list
-            openList.Remove(currentNode);
+#endif
 
+
+
+            //we are now checking this node so take it from the open list and dump it in the closed list
+#if USELIST
+            openList.Remove(currentNode);
+#endif
             currentNode.inClosedList = true;
 
             //if its the final node, we are done!
             if (currentNode == endnode)
             {
+                sw.Stop();
+                print("PathFound : " + sw.ElapsedMilliseconds + "ms");
                 return CalculatePath(startnode, endnode);
                 
             }
@@ -203,9 +224,9 @@ public class Pathfinder : MonoBehaviour {
         if (openList.Count == 0)
         {
             
-            Debug.LogWarning("Path not solved. Are you checking if the destination is walkable?");
+            //Debug.LogWarning("Path not solved. Are you checking if the destination is walkable?");
          
-            openList.Clear();
+         //   openList.Clear();
         }
         return path;
 

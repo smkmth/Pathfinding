@@ -22,8 +22,6 @@ public class Agent : MonoBehaviour
             Vector3 worldPoint = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             Vector2 worldPoint2d = new Vector2(worldPoint.x, worldPoint.y);
             pathfinder.SetDestination(worldPoint2d);
-
-   
         }
 
     }

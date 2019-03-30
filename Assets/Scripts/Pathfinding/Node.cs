@@ -22,7 +22,7 @@ using UnityEngine;
 //AND OBJECTS TO AVOID NEED TO BE ON A LAYER CALLED "Object"
 
 //********************************************************************
-public class Node : MonoBehaviour {
+public class Node : MonoBehaviour, IHeapItem<Node>{
 
 
     [HideInInspector]
@@ -53,6 +53,23 @@ public class Node : MonoBehaviour {
             return Gcost + Hcost;
         }
     }
+
+    //heap stuff
+    int heapIndex;
+
+    public int HeapIndex
+    {
+        get
+        {
+            return heapIndex;
+        }
+
+        set
+        {
+            heapIndex = value;
+        }
+    }
+
     public bool walkable;
     public bool inClosedList;
 
@@ -147,6 +164,16 @@ public class Node : MonoBehaviour {
         previous = this;
         Hcost = 0;
         Gcost = 0;
+
+    }
+
+    public int CompareTo(Node other)
+    {
+        int compare = Fcost.CompareTo(other.Fcost);
+        if (compare == 0){
+            compare = Hcost.CompareTo(other.Hcost);
+        }
+        return -compare;
 
     }
 }

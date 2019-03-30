@@ -394,8 +394,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   nodeprefab: {fileID: 1821013104523110, guid: 1021e6c1a9c87aa479b23ccaa06d8c13, type: 3}
-  gridsizeX: 200
-  gridsizeY: 200
+  gridsizeX: 400
+  gridsizeY: 400
   nodeRad: 0.7
   NodeRadiusToCheck: 3
 --- !u!1 &767971054

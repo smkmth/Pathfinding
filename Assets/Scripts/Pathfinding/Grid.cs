@@ -19,6 +19,8 @@ public class Grid : MonoBehaviour {
     //how far each node should check
     public float NodeRadiusToCheck;
 
+
+
     private Pathfinder pathfinder;
 
 
@@ -68,6 +70,14 @@ public class Grid : MonoBehaviour {
         pathfinder.Nodes = nodes;
 		
 	}
+
+    public float MaxSize
+    {
+        get
+        {
+            return gridsizeX * gridsizeY;
+        }
+    }
 	
 
 }
