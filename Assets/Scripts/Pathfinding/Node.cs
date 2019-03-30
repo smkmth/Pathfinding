@@ -22,6 +22,7 @@ using UnityEngine;
 //AND OBJECTS TO AVOID NEED TO BE ON A LAYER CALLED "Object"
 
 //********************************************************************
+[RequireComponent(typeof(CircleCollider2D))]
 public class Node : MonoBehaviour, IHeapItem<Node>{
 
 
@@ -29,8 +30,11 @@ public class Node : MonoBehaviour, IHeapItem<Node>{
     public float DistanceToCheck;
     [HideInInspector]
     public float RadiusToCheck;
+    
 
     public List<Node> connections;
+
+    [HideInInspector]
     public Transform location;
 
     private Vector2 downleft;
@@ -38,14 +42,14 @@ public class Node : MonoBehaviour, IHeapItem<Node>{
     private Vector2 forwardleft;
     private Vector2 forwardright;
 
-    public LayerMask NodesToCheck;
-    public LayerMask WallsToCheck;
-
-
     //pathfinding stuff
+    [HideInInspector]
     public Node previous;
+    [HideInInspector]
     public float Gcost;
+    [HideInInspector]
     public float Hcost;
+    [HideInInspector]
     public float Fcost
     {
         get
@@ -55,6 +59,7 @@ public class Node : MonoBehaviour, IHeapItem<Node>{
     }
 
     //heap stuff
+    [HideInInspector]
     int heapIndex;
 
     public int HeapIndex
@@ -70,7 +75,9 @@ public class Node : MonoBehaviour, IHeapItem<Node>{
         }
     }
 
+
     public bool walkable;
+    [HideInInspector]
     public bool inClosedList;
 
 
@@ -106,12 +113,16 @@ public class Node : MonoBehaviour, IHeapItem<Node>{
         CheckDirection(downleft, DistanceToCheck, RadiusToCheck);
         CheckDirection(downright, DistanceToCheck, RadiusToCheck);
         */
-        Collider2D[] results = Physics2D.OverlapCircleAll(transform.position, RadiusToCheck, NodesToCheck );
+        Collider2D[] results = Physics2D.OverlapCircleAll(transform.position, RadiusToCheck, LayerMask.GetMask("Node"));
         foreach(Collider2D result in results)
         {
             if(result.gameObject.layer == LayerMask.NameToLayer("Node"))
             {
-                connections.Add(result.gameObject.GetComponent<Node>());
+                Node node = result.gameObject.GetComponent<Node>();
+                if (!connections.Contains(node) && node != this)
+                {
+                    connections.Add(result.gameObject.GetComponent<Node>());
+                }
             }
         }
          
@@ -143,7 +154,7 @@ public class Node : MonoBehaviour, IHeapItem<Node>{
             {
                 Node node = hit.collider.gameObject.GetComponent<Node>();
 
-                connections.Add(hit.collider.gameObject.GetComponent<Node>());
+                connections.Add(node);
 
                 Debug.DrawLine(transform.position, directionToCheck * hit.distance, Color.blue,5.0f);
                 //Debug.Log(gameObject.name + "can travel to " + hit.collider.gameObject.name);

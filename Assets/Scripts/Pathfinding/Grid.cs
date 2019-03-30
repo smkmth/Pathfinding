@@ -17,6 +17,7 @@ public class Grid : MonoBehaviour {
     public float nodeRad;
 
     //how far each node should check
+    [HideInInspector]
     public float NodeRadiusToCheck;
 
 
@@ -33,6 +34,8 @@ public class Grid : MonoBehaviour {
 
         //get diameter from radius
         nodeDiameter = nodeRad * 2;
+
+        NodeRadiusToCheck = (nodeRad * 3) * 0.9f;
 
         //get the size of the grid accomidating for node size 
         gridsizeX = Mathf.RoundToInt(gridsizeX / nodeDiameter);
@@ -54,6 +57,8 @@ public class Grid : MonoBehaviour {
                 Vector2 gridPoint = worldBottomLeft + Vector2.right * (x * nodeDiameter + nodeRad) + Vector2.up * (y *nodeDiameter + nodeRad);
                 nodeobj.transform.position = gridPoint;
                 nodeobj.SetActive(true);
+                nodeobj.GetComponent<CircleCollider2D>().radius = nodeRad;
+                nodeobj.GetComponent<CircleCollider2D>().isTrigger = true;
                 Node node = nodeobj.GetComponent<Node>();
                 node.name = x.ToString() + " " + y.ToString();
                 node.RadiusToCheck = NodeRadiusToCheck;

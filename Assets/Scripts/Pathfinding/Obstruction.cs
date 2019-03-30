@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+[RequireComponent(typeof(BoxCollider2D))]
 public class Obstruction : MonoBehaviour {
 
     public List<Node> ObstructedNodes; 
@@ -25,7 +25,7 @@ public class Obstruction : MonoBehaviour {
 
         }
 
-        Vector2 bounds = GetComponent<BoxCollider2D>().bounds.size * 1.1f;
+        Vector2 bounds = GetComponent<BoxCollider2D>().bounds.size * 1.01f;
 
         //Vector2 bounds = new Vector2(30, 30);
 

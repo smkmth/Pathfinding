@@ -364,9 +364,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Nodes: []
-  nodeLayer:
-    serializedVersion: 2
-    m_Bits: 256
 --- !u!4 &217071445
 Transform:
   m_ObjectHideFlags: 0
@@ -394,10 +391,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   nodeprefab: {fileID: 1821013104523110, guid: 1021e6c1a9c87aa479b23ccaa06d8c13, type: 3}
-  gridsizeX: 400
-  gridsizeY: 400
+  gridsizeX: 250
+  gridsizeY: 250
   nodeRad: 0.7
-  NodeRadiusToCheck: 3
+  NodeRadiusToCheck: 2.1
 --- !u!1 &767971054
 GameObject:
   m_ObjectHideFlags: 0
@@ -749,7 +746,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 18.31729
+  orthographic size: 33.75489
   m_Depth: 0
   m_CullingMask:
     serializedVersion: 2

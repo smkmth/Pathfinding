@@ -1,10 +1,9 @@
 ﻿//uncomment out to see path, start point and destination
-//#define DEBUGDRAW
+#define DEBUGDRAW
 //#define USELIST
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using System.Diagnostics;
 
 //The class that actually does the pathfinding implementation.
 //to work, this class needs some kind of node class, which has a 
@@ -15,117 +14,10 @@ public class Pathfinder : MonoBehaviour {
 
     //A list of nodes for the pathfinder to navigate
     public List<Node> Nodes;
-    //what layer the nodes are on, used in the get closest node code.
-    public LayerMask nodeLayer;
-
-
-
-
-    //get the closest node to a vector2 pos. Obsolete, use CheapGetClosestNode
-    public Node GetClosestNode(Vector2 pos)
-    {
-        Node currentclosest = Nodes[0];
-
-        float bestdistance = 9999999.0f;
-        foreach( Node node in Nodes)
-        {
-            float currentdistance = Vector2.Distance(pos, node.location.position);
-            if (currentdistance < bestdistance)
-            {
-                bestdistance = currentdistance;
-                currentclosest = node;
-            }
-        }
-       // Debug.LogWarning("Caution; using the expensive get closest node. consider using CheapGetClosestNode");
-        return currentclosest;
-    }
-    //cheap get closest node returns in 0.045ms, verces get closest which takes about 18ms, uses 
-    //manhatten distance instead of squrt which is major league cheaper
-    public Node CheapGetClosestNode(Vector2 pos)
-    {
-        Node currentclosest = Nodes[0];
-        float bestdistance = 9999999.0f;
-        Collider2D[] results = Physics2D.OverlapCircleAll(pos, 3.0f, nodeLayer);
-        foreach (Collider2D result in results)
-        {
-            if (result.gameObject.layer == LayerMask.NameToLayer("Node"))
-            {
-                Node currentClosest = result.GetComponent<Node>();
-                float testdistance = GetDistance(currentClosest, pos);
-                if (bestdistance > testdistance)
-                {
-                    bestdistance = testdistance;
-                    currentclosest = currentClosest;
-                }
-
-            }
-        }
-#if DEBUGDRAW
-        currentclosest.transform.GetChild(0).gameObject.SetActive(true);
-        currentclosest.GetComponentInChildren<SpriteRenderer>().color = Color.red;
-#endif
-
-        return currentclosest;
-    }
-
-    //get the cloest node to a given transform
-    public Node GetClosestNode(Transform pos)
-    {
-        Node currentclosest = new Node();
-
-        float bestdistance = 9999999.0f;
-        foreach (Node node in Nodes)
-        {
-            float currentdistance = Vector2.Distance(pos.position, node.location.position);
-            if (currentdistance < bestdistance)
-            {
-                bestdistance = currentdistance;
-                currentclosest = node;
-            }
-        }
-        return currentclosest;
-    }
-    
-    //get the distance used between two nodes. used in g cost.
-    public float GetDistance(Node node1, Node node2)
-    {
-        float DistX = Mathf.Abs(node1.location.position.x - node2.location.position.x);
-        float DistY = Mathf.Abs(node1.location.position.y - node2.location.position.y);
-
-        if (DistX > DistY)
-            return 14 * DistY + 10 * (DistX - DistY);
-        return 14 * DistX + 10 * (DistY - DistX);
-    }
-
-    //get the distance used between a node and a pos.
-    public float GetDistance(Node node1, Vector2 pos)
-    {
-        float DistX = Mathf.Abs(node1.location.position.x - pos.x);
-        float DistY = Mathf.Abs(node1.location.position.y - pos.y);
-
-        if (DistX > DistY)
-            return 14 * DistY + 10 * (DistX - DistY);
-        return 14 * DistX + 10 * (DistY - DistX);
-
-    }
-
-    //get the distance used between a pos and a pos.
-    public float GetDistance(Vector2 pos1, Vector2 pos2)
-    {
-        float DistX = Mathf.Abs(pos1.x - pos2.x);
-        float DistY = Mathf.Abs(pos1.y - pos2.y);
-
-        if (DistX > DistY)
-            return 14 * DistY + 10 * (DistX - DistY);
-        return 14 * DistX + 10 * (DistY - DistX);
-
-    }
 
 
     public List<Node> PathFind(Vector2 start, Vector2 end)
     {
-        Stopwatch sw = new Stopwatch();
-        sw.Start();
         foreach (Node node in Nodes)
         {
             node.ClearNode();
@@ -177,8 +69,8 @@ public class Pathfinder : MonoBehaviour {
             //if its the final node, we are done!
             if (currentNode == endnode)
             {
-                sw.Stop();
-                print("PathFound : " + sw.ElapsedMilliseconds + "ms");
+                //sw.Stop();
+                //print("PathFound : " + sw.ElapsedMilliseconds + "ms");
                 return CalculatePath(startnode, endnode);
                 
             }
@@ -256,6 +148,109 @@ public class Pathfinder : MonoBehaviour {
         return path;
     }
 
-    
+//NODE FINDING!
+
+    //get the closest node to a vector2 pos. Obsolete, use CheapGetClosestNode
+    public Node GetClosestNode(Vector2 pos)
+    {
+        Node currentclosest = Nodes[0];
+
+        float bestdistance = 9999999.0f;
+        foreach (Node node in Nodes)
+        {
+            float currentdistance = Vector2.Distance(pos, node.location.position);
+            if (currentdistance < bestdistance)
+            {
+                bestdistance = currentdistance;
+                currentclosest = node;
+            }
+        }
+        // Debug.LogWarning("Caution; using the expensive get closest node. consider using CheapGetClosestNode");
+        return currentclosest;
+    }
+    //cheap get closest node returns in 0.045ms, verces get closest which takes about 18ms, uses 
+    //manhatten distance instead of squrt which is major league cheaper
+    public Node CheapGetClosestNode(Vector2 pos)
+    {
+        Node currentclosest = Nodes[0];
+        float bestdistance = 9999999.0f;
+        Collider2D[] results = Physics2D.OverlapCircleAll(pos, 3.0f, LayerMask.GetMask("Node"));
+        foreach (Collider2D result in results)
+        {
+            if (result.gameObject.layer == LayerMask.NameToLayer("Node"))
+            {
+                Node currentClosest = result.GetComponent<Node>();
+                float testdistance = GetDistance(currentClosest, pos);
+                if (bestdistance > testdistance)
+                {
+                    bestdistance = testdistance;
+                    currentclosest = currentClosest;
+                }
+
+            }
+        }
+#if DEBUGDRAW
+        currentclosest.transform.GetChild(0).gameObject.SetActive(true);
+        currentclosest.GetComponentInChildren<SpriteRenderer>().color = Color.red;
+#endif
+
+        return currentclosest;
+    }
+
+    //get the cloest node to a given transform
+    public Node GetClosestNode(Transform pos)
+    {
+        Node currentclosest = new Node();
+
+        float bestdistance = 9999999.0f;
+        foreach (Node node in Nodes)
+        {
+            float currentdistance = Vector2.Distance(pos.position, node.location.position);
+            if (currentdistance < bestdistance)
+            {
+                bestdistance = currentdistance;
+                currentclosest = node;
+            }
+        }
+        return currentclosest;
+    }
+
+    //get the distance used between two nodes. used in g cost.
+    public float GetDistance(Node node1, Node node2)
+    {
+        float DistX = Mathf.Abs(node1.location.position.x - node2.location.position.x);
+        float DistY = Mathf.Abs(node1.location.position.y - node2.location.position.y);
+
+        if (DistX > DistY)
+            return 14 * DistY + 10 * (DistX - DistY);
+        return 14 * DistX + 10 * (DistY - DistX);
+    }
+
+    //get the distance used between a node and a pos.
+    public float GetDistance(Node node1, Vector2 pos)
+    {
+        float DistX = Mathf.Abs(node1.location.position.x - pos.x);
+        float DistY = Mathf.Abs(node1.location.position.y - pos.y);
+
+        if (DistX > DistY)
+            return 14 * DistY + 10 * (DistX - DistY);
+        return 14 * DistX + 10 * (DistY - DistX);
+
+    }
+
+    //get the distance used between a pos and a pos.
+    public float GetDistance(Vector2 pos1, Vector2 pos2)
+    {
+        float DistX = Mathf.Abs(pos1.x - pos2.x);
+        float DistY = Mathf.Abs(pos1.y - pos2.y);
+
+        if (DistX > DistY)
+            return 14 * DistY + 10 * (DistX - DistY);
+        return 14 * DistX + 10 * (DistY - DistX);
+
+    }
+
+
+
 
 }

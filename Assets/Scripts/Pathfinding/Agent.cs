@@ -24,5 +24,7 @@ public class Agent : MonoBehaviour
             pathfinder.SetDestination(worldPoint2d);
         }
 
+
+
     }
 }

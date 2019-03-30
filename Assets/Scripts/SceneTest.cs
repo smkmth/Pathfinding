@@ -33,14 +33,7 @@ public class SceneTest : MonoBehaviour
             Debug.LogError("No Pathfinder script found; You need to attach a 'Pathfinder' script to the gameobject called Pathfinder");
 
        }
-       else
-        {
-            if (!IsInLayerMask(LayerMask.NameToLayer("Node"), GameObject.Find("Pathfinder").GetComponent<Pathfinder>().nodeLayer))
-            {
-                Debug.LogError("The node layer in pathfinder needs to be set to 'Node' so GetClosestNode Works");
-            }
-
-        }
+     
 
        //GRID TESTING
         if (!GameObject.Find("Pathfinder").GetComponent<Grid>())
@@ -146,23 +139,13 @@ public class SceneTest : MonoBehaviour
 
             }
 
-            if (GameObject.Find("Pathfinder").transform.GetChild(transform.childCount /2 ).GetComponent<Node>().connections.Count <= 5)
+            if (GameObject.Find("Pathfinder").transform.GetChild(GameObject.Find("Pathfinder").transform.childCount /2 ).GetComponent<Node>().connections.Count <= 4)
             {
                 Debug.LogWarning("Nodes are not detecting diagonal nodes, you need to increase the Node Radius To Check in Pathfinder");
             }
-            if (GameObject.Find("Pathfinder").transform.GetChild(transform.childCount / 2).GetComponent<Node>().connections.Count >= 8)
+            if (GameObject.Find("Pathfinder").transform.GetChild(GameObject.Find("Pathfinder").transform.childCount / 2).GetComponent<Node>().connections.Count > 8)
             {
                 Debug.LogWarning("Nodes are detecting to many nodes! you probably should decrease the Node Radius To Check in pathfinder");
-            }
-
-            if (!IsInLayerMask(LayerMask.NameToLayer("Node"), GameObject.FindObjectOfType<Node>().GetComponent<Node>().NodesToCheck)) 
-            {
-                Debug.LogError("Node's 'NodesToCheck' layer mask is not set to check for other nodes!");
-            }
-
-            if (!GameObject.FindObjectOfType<Node>().GetComponentInChildren<SpriteRenderer>())
-            {
-                Debug.LogWarning("Nodes dont have a sprite attached to them- so they wont work with DEBUGDRAW defined");
             }
 
 
