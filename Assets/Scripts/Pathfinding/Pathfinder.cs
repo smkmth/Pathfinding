@@ -1,6 +1,6 @@
 ﻿//uncomment out to see path, start point and destination
 #define DEBUGDRAW
-//#define USELIST
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -14,10 +14,24 @@ public class Pathfinder : MonoBehaviour {
 
     //A list of nodes for the pathfinder to navigate
     public List<Node> Nodes;
+    PathRequestManager requestManager;
 
 
-    public List<Node> PathFind(Vector2 start, Vector2 end)
+    public void Awake()
     {
+        requestManager = GetComponent<PathRequestManager>();
+    }
+
+    public void StartFindPath(Vector2 start, Vector2 end)
+    {
+        StartCoroutine(PathFind(start, end));
+    }
+
+    public IEnumerator PathFind(Vector2 start, Vector2 end)
+    {
+        bool pathSucess = false;
+        Vector2[] waypoints = new Vector2[0];
+
         foreach (Node node in Nodes)
         {
             node.ClearNode();
@@ -25,113 +39,99 @@ public class Pathfinder : MonoBehaviour {
         //init variables i will need
         Node startnode = CheapGetClosestNode(start);
         Node endnode = CheapGetClosestNode(end);
-#if USELIST
-        List<Node> openList = new List<Node>();     //open list for all the nodes the algorithim is considering
-#else
-        Heap<Node> openList = new Heap<Node>(Nodes.Count);     //open list for all the nodes the algorithim is considering
-#endif
-        List<Node> path = new List<Node>();          //a list of nodes to form a path
-        Node currentNode = startnode;           //the current node being investigated
-
-        //start by adding the start point to our open lsit
-        openList.Add(startnode);
-
-        //While we still have options to consider
-        while (openList.Count > 0)
+        if (startnode.walkable && endnode.walkable)
         {
 
-#if USELIST
-            currentNode = openList[0];
-#else
-            currentNode = openList.RemoveFirst();
-#endif
+            Heap<Node> openList = new Heap<Node>(Nodes.Count);     //open list for all the nodes the algorithim is considering
 
+            List<Node> path = new List<Node>();          //a list of nodes to form a path
+            Node currentNode = startnode;           //the current node being investigated
 
-#if USELIST
-            //find the most promicing node to consider
-            foreach (Node opennode in openList)
+            //start by adding the start point to our open lsit
+            openList.Add(startnode);
+
+            //While we still have options to consider
+            while (openList.Count > 0)
             {
-                if (opennode.Fcost < currentNode.Fcost || opennode.Fcost == currentNode.Fcost && opennode.Hcost < currentNode.Hcost)
+
+                //the heap finds the next most promicing item in the open list
+                currentNode = openList.RemoveFirst();
+                //we are now checking this node so take it from the open list and dump it in the closed list
+                currentNode.inClosedList = true;
+
+                //if its the final node, we are done!
+                if (currentNode == endnode)
                 {
-                    currentNode = opennode;
+                    pathSucess = true;
+                    break;
+
+
                 }
-            }
-#endif
 
-
-
-            //we are now checking this node so take it from the open list and dump it in the closed list
-#if USELIST
-            openList.Remove(currentNode);
-#endif
-            currentNode.inClosedList = true;
-
-            //if its the final node, we are done!
-            if (currentNode == endnode)
-            {
-                //sw.Stop();
-                //print("PathFound : " + sw.ElapsedMilliseconds + "ms");
-                return CalculatePath(startnode, endnode);
-                
-            }
-
-            //if not, look at each of its neighbor nodes. 
-            foreach (Node neighbor in currentNode.connections)
-            {
+                //if not, look at each of its neighbor nodes. 
+                foreach (Node neighbor in currentNode.connections)
+                {
 #if DEBUGDRAW
-                Debug.DrawLine(currentNode.transform.position, neighbor.transform.position,Color.red, 3.0f);
+                    Debug.DrawLine(currentNode.transform.position, neighbor.transform.position, Color.red, 3.0f);
 #endif
-                //if the neighbor is in the closed list we have already delt with it.
-                if (neighbor.inClosedList == true || neighbor.walkable == false)
-                {
-                    continue;
-                }
-
-                //else calculate a potential move cost, by adding the distance to this currentnode and its neigbour to the
-                //current gcost. 
-                float newMovementCost = currentNode.Gcost + GetDistance(currentNode, neighbor);
-
-                //if it is better then the neighbor gcost then use it. if it is not in the open list, add it to the open list
-                if (newMovementCost < neighbor.Gcost || !openList.Contains(neighbor))
-                {
-                    //we now set the g cost of the neighbor, which is how quickly i can get to the neigbor node
-                    neighbor.Gcost = newMovementCost;
-                    //we then set the h cost, which is how close the neighbor is to the end.
-                    //the combined f cost is our heuristic for evaluating which node to check next.
-                    neighbor.Hcost = GetDistance(neighbor, endnode);
-
-                    //lastly we set the neighbors previous value, which is a reference to the previous point on the path
-                    //really important as that is how we will ultimately find the path in calculate path.
-                    neighbor.previous = currentNode;
-
-                    if (!openList.Contains(neighbor))
+                    //if the neighbor is in the closed list we have already delt with it.
+                    if (neighbor.inClosedList == true || neighbor.walkable == false)
                     {
-                        openList.Add(neighbor);
+                        continue;
                     }
-                }
 
+                    //else calculate a potential move cost, by adding the distance to this currentnode and its neigbour to the
+                    //current gcost. 
+                    float newMovementCost = currentNode.Gcost + GetDistance(currentNode, neighbor);
+
+                    //if it is better then the neighbor gcost then use it. if it is not in the open list, add it to the open list
+                    if (newMovementCost < neighbor.Gcost || !openList.Contains(neighbor))
+                    {
+                        //we now set the g cost of the neighbor, which is how quickly i can get to the neigbor node
+                        neighbor.Gcost = newMovementCost;
+                        //we then set the h cost, which is how close the neighbor is to the end.
+                        //the combined f cost is our heuristic for evaluating which node to check next.
+                        neighbor.Hcost = GetDistance(neighbor, endnode);
+
+                        //lastly we set the neighbors previous value, which is a reference to the previous point on the path
+                        //really important as that is how we will ultimately find the path in calculate path.
+                        neighbor.previous = currentNode;
+
+                        if (!openList.Contains(neighbor))
+                        {
+                            openList.Add(neighbor);
+                        }
+                    }
+
+                }
+            }
+            //if we get here, the node is impossible to reach! we simply reset the nodes and return a null path. 
+            if (openList.Count == 0)
+            {
+
+                //Debug.LogWarning("Path not solved. Are you checking if the destination is walkable?");
+
+                //   openList.Clear();
             }
         }
-        //if we get here, the node is impossible to reach! we simply reset the nodes and return a null path. 
-        if (openList.Count == 0)
+
+        yield return null;
+        if (pathSucess)
         {
-            
-            //Debug.LogWarning("Path not solved. Are you checking if the destination is walkable?");
-         
-         //   openList.Clear();
+            waypoints = CalculatePath(startnode, endnode);
         }
-        return path;
+        requestManager.FinishedProcessingPath(waypoints, pathSucess);
 
 
     }
     //here we calculate the actual path, by stepping backwards through 
     //the nodes, from the end node, and reading each previously value
     //inside each node. the end result is then reversed and returned.
-    public List<Node> CalculatePath(Node start, Node end)
+    public Vector2[] CalculatePath(Node start, Node end)
     {
         
         List<Node> path = new List<Node>();
-      
+
         Node pathCurrentNode= end;
         while(pathCurrentNode != start)
         {
@@ -144,11 +144,29 @@ public class Pathfinder : MonoBehaviour {
 
         }
         
-        path.Reverse();
-        return path;
+        Vector2[] waypoints = SimplifyPath(path);
+        Array.Reverse(waypoints);
+        return waypoints;
     }
 
-//NODE FINDING!
+    Vector2[] SimplifyPath(List<Node> path)
+    {
+        List<Vector2> waypoints = new List<Vector2>();
+        Vector2 directionOld = Vector2.zero;
+
+        for (int i = 1; i < path.Count; i++)
+        {
+            Vector2 directionNew = new Vector2(path[i - 1].transform.position.x - path[i].transform.position.x, path[i - 1].transform.position.y- path[i].transform.position.y);
+            if (directionNew != directionOld)
+            {
+                waypoints.Add(path[i].transform.position);
+            }
+            directionOld = directionNew;
+        }
+        return waypoints.ToArray();
+    }
+
+    //NODE FINDING!
 
     //get the closest node to a vector2 pos. Obsolete, use CheapGetClosestNode
     public Node GetClosestNode(Vector2 pos)

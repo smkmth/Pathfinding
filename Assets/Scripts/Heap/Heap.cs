@@ -103,6 +103,8 @@ public class Heap<T> where T :IHeapItem<T>
             {
                 break;
             }
+            parentIndex = (item.HeapIndex - 1) / 2;
+
         }
 
     }

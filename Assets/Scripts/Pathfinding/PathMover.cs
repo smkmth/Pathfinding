@@ -22,7 +22,7 @@ public class PathMover : MonoBehaviour {
     //private vars that store the list of targets, the index
     //for the target we are currently going for and the 
     //distance from current target.
-    private List<Node> targetNodeList;
+    public Vector2[] path;
     private int targetListIndex;
     private float distance;
     
@@ -42,86 +42,91 @@ public class PathMover : MonoBehaviour {
     public void SetDestination(Vector2 destination)
     {
         targetListIndex = 0;
-        currentMovestate = Movestate.TargetGiven;
 
         if (pathfinder.GetDistance(destination, transform.position) < fudgeDistance )
         {
             currentMovestate = Movestate.Finished;
             return;
         }
-
-        Node destinationNode = pathfinder.CheapGetClosestNode(destination);
-            
-        if (destinationNode.walkable == false)
-        {
-            currentMovestate = Movestate.Error;
-            return;
-        }
-
-        SetPath(pathfinder.PathFind(transform.position, destination));
+        PathRequestManager.RequestPath(transform.position, destination, OnPathFound);
 
     }
-
-    //set path validates the path, to make sure it makes sence then sets it to 
-    //targetNodeList and sets the movestate so we start moving.
-    public void SetPath(List<Node> targetlist)
+    public void OnPathFound(Vector2[] newPath, bool pathSuccessful)
     {
 
-        if (targetlist.Count <= 0)
+        if (pathSuccessful)
         {
-            currentMovestate = Movestate.Error;
+            currentMovestate = Movestate.TargetGiven;
+            path = newPath;
+            Debug.Log("PathFound!");
+            targetListIndex = 0;
+
         }
         else
         {
-            int targetindex = 0;
-            foreach (Node target in targetlist)
-            {
-                if (target == null) {
-                    Debug.Assert(false, "Target " + targetindex + " is null for " + gameObject.name);
-                    currentMovestate = Movestate.Error;
-                }
-                targetindex++;
-            }
-
-            targetNodeList = targetlist;     
+            currentMovestate = Movestate.Error;
         }
     }
+
+
+ 
 	
 	// Update is called once per frame
 	void Update () {
-
-  
 
         //if we have a path, we move our transfrom towards the taget at a speed. else, we either increment 
         //the targetListIndex to the next target node, or we are finished, and awaiting orders. 
         if (currentMovestate != Movestate.Error && currentMovestate != Movestate.Finished)
         {
+            if (targetListIndex >= (path.Length))
+            {
+                currentMovestate = Movestate.Finished;
+                Debug.Log("Finished!");
+
+                targetListIndex = 0;
+                return;
+                
+            }
             
-            distance = Vector2.Distance(transform.position, targetNodeList[targetListIndex].location.position);
+            distance = Vector2.Distance(transform.position, path[targetListIndex]);
             if (distance > fudgeDistance)
             {
                 float step = movespeed * Time.deltaTime;
-                Vector3 mov = Vector3.MoveTowards(transform.position, targetNodeList[targetListIndex].location.position, step);
+                Vector3 mov = Vector3.MoveTowards(transform.position, path[targetListIndex], step);
                 transform.position = mov;
                 currentMovestate = Movestate.Moving;
 
             }
             else
             {
-                if (targetListIndex >= (targetNodeList.Count - 1))
-                {
+                targetListIndex += 1;
 
-                    currentMovestate = Movestate.Finished;
-                    targetListIndex = 0;
-                }
-                else
-                {
-                    targetListIndex += 1;
-                }
             }
+
         }
 
         
 		
 	}
+
+    public void OnDrawGizmos()
+    {
+        if (path != null)
+        {
+            for (int i = targetListIndex; i < path.Length; i++)
+            {
+                Gizmos.color = Color.black;
+                Gizmos.DrawCube(path[i], Vector3.one);
+
+                if (i == targetListIndex)
+                {
+                    Gizmos.DrawLine(transform.position, path[i]);
+                }
+                else
+                {
+                    Gizmos.DrawLine(path[i - 1], path[i]);
+                }
+            }
+        }
+    }
 }
