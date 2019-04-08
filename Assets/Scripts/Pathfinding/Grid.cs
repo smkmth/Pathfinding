@@ -76,6 +76,8 @@ public class Grid : MonoBehaviour {
 		
 	}
 
+
+
     public float MaxSize
     {
         get

@@ -9,6 +9,14 @@ public enum Movestate
     Finished
 }
 
+public enum FacingDirection
+{
+    UP = 270,
+    DOWN = 90,
+    LEFT = 180,
+    RIGHT = 0
+}
+
 public class PathMover : MonoBehaviour {
 
     //what state this ai currently is
@@ -17,15 +25,20 @@ public class PathMover : MonoBehaviour {
     //our movespeed, and how close we need to be
     //to a target to consider the path finished.
     public float movespeed;
+    public float turnSpeed = 3;
     public float fudgeDistance;
 
     //private vars that store the list of targets, the index
     //for the target we are currently going for and the 
     //distance from current target.
-    public Vector2[] path;
+    //public Vector2[] path;
     private int targetListIndex;
+    public float turnDistance;
     private float distance;
-    
+    const float pathUpdateMoveThreshold = .5f;
+
+    Path path;
+    Vector2 target;
     //a ref to our pathfinder 
     private Pathfinder pathfinder;
 	
@@ -42,6 +55,7 @@ public class PathMover : MonoBehaviour {
     public void SetDestination(Vector2 destination)
     {
         targetListIndex = 0;
+        target = destination;
 
         if (pathfinder.GetDistance(destination, transform.position) < fudgeDistance )
         {
@@ -57,9 +71,11 @@ public class PathMover : MonoBehaviour {
         if (pathSuccessful)
         {
             currentMovestate = Movestate.TargetGiven;
-            path = newPath;
+            path = new Path(newPath, transform.position, turnDistance);
             Debug.Log("PathFound!");
-            targetListIndex = 0;
+            StopCoroutine("FollowPath");
+            StartCoroutine("FollowPath");
+           // targetListIndex = 0;
 
         }
         else
@@ -68,65 +84,50 @@ public class PathMover : MonoBehaviour {
         }
     }
 
-
- 
-	
-	// Update is called once per frame
-	void Update () {
-
-        //if we have a path, we move our transfrom towards the taget at a speed. else, we either increment 
-        //the targetListIndex to the next target node, or we are finished, and awaiting orders. 
-        if (currentMovestate != Movestate.Error && currentMovestate != Movestate.Finished)
+    IEnumerator FollowPath()
+    {
+        bool followingPath = true;
+        int pathIndex = 0;
+        transform.LookAt(path.lookPoints[0]);
+        while (followingPath)
         {
-            if (targetListIndex >= (path.Length))
+            Vector2 pos = new Vector2(transform.position.x, transform.position.y);
+            while (path.turnBounaries[pathIndex].HasCrossedLine(pos))
             {
-                currentMovestate = Movestate.Finished;
-                Debug.Log("Finished!");
+                if (pathIndex == path.finishLineIndex)
+                {
+                    followingPath = false;
+                    break;
+                }
+                else
+                {
+                    pathIndex++;
 
-                targetListIndex = 0;
-                return;
-                
+                }
             }
-            
-            distance = Vector2.Distance(transform.position, path[targetListIndex]);
-            if (distance > fudgeDistance)
+            if (followingPath)
             {
-                float step = movespeed * Time.deltaTime;
-                Vector3 mov = Vector3.MoveTowards(transform.position, path[targetListIndex], step);
-                transform.position = mov;
-                currentMovestate = Movestate.Moving;
-
+                transform.rotation = FaceObject(pos, path.lookPoints[pathIndex], FacingDirection.DOWN);
+                transform.Translate(Vector3.up * Time.deltaTime * movespeed, Space.Self);
             }
-            else
-            {
-                targetListIndex += 1;
-
-            }
-
+            yield return null;
         }
+    }
 
-        
-		
-	}
+    public static Quaternion FaceObject(Vector2 startingPosition, Vector2 targetPosition, FacingDirection facing)
+    {
+        Vector2 direction = targetPosition - startingPosition;
+        float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+        angle -= (float)facing;
+        return Quaternion.AngleAxis(angle, Vector3.forward);
+    }
+
 
     public void OnDrawGizmos()
     {
         if (path != null)
         {
-            for (int i = targetListIndex; i < path.Length; i++)
-            {
-                Gizmos.color = Color.black;
-                Gizmos.DrawCube(path[i], Vector3.one);
-
-                if (i == targetListIndex)
-                {
-                    Gizmos.DrawLine(transform.position, path[i]);
-                }
-                else
-                {
-                    Gizmos.DrawLine(path[i - 1], path[i]);
-                }
-            }
+            path.DrawWithGizmos();
         }
     }
 }
