@@ -4,11 +4,13 @@ using UnityEngine;
 [RequireComponent(typeof(BoxCollider2D))]
 public class Obstruction : MonoBehaviour {
 
-    public List<Node> ObstructedNodes; 
+    public List<Node> ObstructedNodes;
+    // Declare and initialize a new List of GameObjects called currentCollisions.
+    public List<GameObject> currentCollisions = new List<GameObject>();
+
     // Use this for initialization
     void Start ()
     {
-
         CheckNodes();
     }
 
@@ -25,7 +27,7 @@ public class Obstruction : MonoBehaviour {
 
         }
 
-        Vector2 bounds = GetComponent<BoxCollider2D>().bounds.size * 1.01f;
+        Vector2 bounds = GetComponent<Collider2D>().bounds.size * 1.01f;
 
         //Vector2 bounds = new Vector2(30, 30);
 
@@ -52,6 +54,8 @@ public class Obstruction : MonoBehaviour {
             CheckNodes();
         }
     }
+
+  
 
 
 }

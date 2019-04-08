@@ -82,7 +82,7 @@ public class Pathfinder : MonoBehaviour {
 
                     //else calculate a potential move cost, by adding the distance to this currentnode and its neigbour to the
                     //current gcost. 
-                    float newMovementCost = currentNode.Gcost + GetDistance(currentNode, neighbor);
+                    float newMovementCost = currentNode.Gcost + GetDistance(currentNode, neighbor)+ neighbor.movementPenalty;
 
                     //if it is better then the neighbor gcost then use it. if it is not in the open list, add it to the open list
                     if (newMovementCost < neighbor.Gcost || !openList.Contains(neighbor))
@@ -100,6 +100,10 @@ public class Pathfinder : MonoBehaviour {
                         if (!openList.Contains(neighbor))
                         {
                             openList.Add(neighbor);
+                        }
+                        else
+                        {
+                            openList.UpdateItem(neighbor);
                         }
                     }
 

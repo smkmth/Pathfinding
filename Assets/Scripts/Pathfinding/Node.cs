@@ -33,6 +33,7 @@ public class Node : MonoBehaviour, IHeapItem<Node>{
     
 
     public List<Node> connections;
+    public List<GameObject> terrain;
 
     [HideInInspector]
     public Transform location;
@@ -57,6 +58,7 @@ public class Node : MonoBehaviour, IHeapItem<Node>{
             return Gcost + Hcost;
         }
     }
+    public float movementPenalty = 10.0f;
 
     //heap stuff
     [HideInInspector]
@@ -95,39 +97,38 @@ public class Node : MonoBehaviour, IHeapItem<Node>{
 
     public void CalculateNeighbors()
     {
-        /*
+        movementPenalty = 100.0f;
 
-        forwardright = (Vector2.up + Vector2.right).normalized;
-        forwardleft = (Vector2.up + Vector2.left).normalized;
-
-        downright = (Vector2.down + Vector2.right).normalized;
-        downleft = (Vector2.down + Vector2.left).normalized;
-
-        CheckDirection(Vector2.right, DistanceToCheck, RadiusToCheck);
-        CheckDirection(Vector2.left, DistanceToCheck, RadiusToCheck);
-        CheckDirection(Vector2.up, DistanceToCheck, RadiusToCheck);
-        CheckDirection(Vector2.down, DistanceToCheck, RadiusToCheck);
-        
-        CheckDirection(forwardleft, DistanceToCheck, RadiusToCheck);
-        CheckDirection(forwardright, DistanceToCheck, RadiusToCheck);
-        CheckDirection(downleft, DistanceToCheck, RadiusToCheck);
-        CheckDirection(downright, DistanceToCheck, RadiusToCheck);
-        */
-        Collider2D[] results = Physics2D.OverlapCircleAll(transform.position, RadiusToCheck, LayerMask.GetMask("Node"));
-        foreach(Collider2D result in results)
         {
-            if(result.gameObject.layer == LayerMask.NameToLayer("Node"))
+            Collider2D[] results = Physics2D.OverlapCircleAll(transform.position, RadiusToCheck, LayerMask.GetMask("Node"));
+            foreach (Collider2D result in results)
             {
-                Node node = result.gameObject.GetComponent<Node>();
-                if (!connections.Contains(node) && node != this)
+                if (result.gameObject.layer == LayerMask.NameToLayer("Node"))
                 {
-                    connections.Add(result.gameObject.GetComponent<Node>());
+                    Node node = result.gameObject.GetComponent<Node>();
+                    if (!connections.Contains(node) && node != this)
+                    {
+                        connections.Add(result.gameObject.GetComponent<Node>());
+                    }
                 }
             }
         }
-         
+        {
+            Collider2D[] results = Physics2D.OverlapCircleAll(transform.position, RadiusToCheck, LayerMask.GetMask("Terrain"));
+            foreach (Collider2D result in results)
+            {
+                if (result.gameObject.layer == LayerMask.NameToLayer("Terrain"))
+                {
+                    if (!terrain.Contains(result.gameObject))
+                    {
+                        movementPenalty = result.gameObject.GetComponent<Terrain>().Cost;
+                    }
+                }
+               
+            }
+        }
 
-     
+
 
     } 
 
